@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <set>
 #include <map>
+#include <sstream>
 #include <vector>
 
 int hsum(const std::string& str) {
@@ -30,8 +31,12 @@ int main() {
         } else if (command == "REMOVE_NODE") {
             std::string name;
             std::cin >> name;
-            positions.erase({hsum(name), name});
-            names.erase(name);
+            if (names.count(name)) {
+                for (int hash : names[name]) {
+                    positions.erase({hash, name});
+                }
+                names.erase(name);
+            }
         } else if (command == "LOOKUP") {
             std::string key;
             std::cin >> key;
@@ -45,12 +50,23 @@ int main() {
             }
             std::cout << it->second << "\n";
         } else if (command == "STATS") {
-            std::string name;
-            while (std::cin >> name) {}
-            for (auto name : names) {
-                if (names.count(name.first) != 0) {
-                    std::cout << name.first << ": " << names.count(name.first) << "\n";
+            std::string line;
+            std::getline(std::cin, line);
+            std::istringstream iss(line);
+            std::string key;
+            std::map<std::string, int> counts;
+            while (iss >> key) {
+                if (positions.empty()) {
+                    continue;
                 }
+                auto it = positions.lower_bound({hsum(key), ""});
+                if (it == positions.end()) {
+                    it = positions.begin();
+                }
+                counts[it->second]++;
+            }
+            for (const auto&[fst, snd] : counts) {
+                std::cout << fst << ": " << snd << "\n";
             }
         }
     }
