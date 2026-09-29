@@ -1,45 +1,49 @@
 #include <string>
-#include <iostream>
 #include <numeric>
+#include <iostream>
+#include <algorithm>
+#include <set>
 #include <map>
 
 int hsum(std::string& str) {
     return std::accumulate(str.begin(), str.end(), 0, [](int sum, char c) {
-        return sum + c;
+        return (sum + c) % 1000;
     });
 }
 
 int main() {
-    std::string line;
-    std::cin >> line;
-    std::map<std::string, int> words;
-    if (line == "KEYS") {
-        std::cin >> line;
-        while (line != "BEFORE") {
-            words.insert({line, hsum(line)});
-            std::cin >> line;
+    std::set<int> positions;
+    std::map<int, std::string> names;
+    std::string command;
+    while (std::cin >> command) {
+        if (command == "ADD_NODE") {
+            std::string name;
+            std::cin >> name;
+            positions.insert(hsum(name));
+            names[hsum(name)] = name;
+            std::cout << "OK" << " " << hsum(name) << std::endl;
+        } else if (command == "REMOVE_NODE") {
+            std::string name;
+            std::cin >> name;
+            positions.erase(hsum(name));
+            names.erase(hsum(name));
+            std::cout << "OK" << std::endl;
+        } else if (command == "LOOKUP") {
+            std::string key;
+            std::cin >> key;
+            if (positions.empty()) {
+                std::cout << "NONE\n";
+                continue;
+            }
+            auto it = positions.lower_bound(hsum(key));
+            if (it == positions.end()) {
+                it = positions.begin();
+            }
+            std::cout << names[*it] << "\n";
+        } else if (command == "RING") {
+            for (auto const& pair : names) {
+                std::cout << pair.second << ":" << pair.first << "\n";
+            }
         }
     }
-    int n;
-    std::cin >> n;
-    for (const auto& word : words) {
-        std::cout << word.first << ": " << word.second % n << std::endl;
-    }
-    std::cin >> line;
-    if (line != "AFTER") {
-        return 0;
-    }
-    int newn;
-    std::cin >> newn;
-    for (const auto& word : words) {
-        std::cout << word.first << ": " << word.second % newn << std::endl;
-    }
-    auto counter = [n, newn, &words]() {
-        int cnt = 0;
-        for (const auto& word : words) {
-            cnt += word.second % n != word.second % newn ? 1 : 0;
-        }
-        return cnt;
-    };
-    std::cout << "moved=" << counter() << std::endl;
 }
