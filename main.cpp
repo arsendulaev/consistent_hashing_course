@@ -46,8 +46,11 @@ int main() {
             std::cout << it->second << "\n";
         } else if (command == "STATS") {
             std::string name;
-            while (std::cin >> name) {
-                std::cout << name << ":" << names.count(name) << "\n";
+            while (std::cin >> name) {}
+            for (auto name : names) {
+                if (names.count(name.first) != 0) {
+                    std::cout << name.first << ": " << names.count(name.first) << "\n";
+                }
             }
         }
     }
